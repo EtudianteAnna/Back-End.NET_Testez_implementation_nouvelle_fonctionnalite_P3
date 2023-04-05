@@ -10,7 +10,7 @@ namespace P3AddNewFunctionalityDotNetCore.Models.ViewModels
         [BindNever]
         public int Id { get; set; }
 
-        [Required(ErrorMessageResourceName = "MissingName", ErrorMessageResourceType = typeof (Resources))]
+        [Required(ErrorMessageResourceName = "MissingName", ErrorMessageResourceType = typeof(Resources.ProductService))]
             public string Name { get; set; }
 
         public string Description { get; set; }
