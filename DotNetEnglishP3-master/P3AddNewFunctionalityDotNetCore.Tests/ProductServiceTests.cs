@@ -6,15 +6,13 @@ using P3AddNewFunctionalityDotNetCore.Models.Services;
 using P3AddNewFunctionalityDotNetCore.Models.Repositories;
 using P3AddNewFunctionalityDotNetCore.Models.ViewModels;
 using Microsoft.Extensions.Localization;
-using System.Xml.Linq;
+
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System;
-using Microsoft.AspNetCore.JsonPatch.Internal;
-using P3AddNewFunctionalityDotNetCore.Models.Entities;
-using System.Security.Cryptography.X509Certificates;
+
 
 namespace P3AddNewFunctionalityDotNetCore.Tests
 {
@@ -27,205 +25,79 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         /// returns an expected value from a particular set of parameters
         /// </summary>
         [Fact]
-        public void ShouldCreerProduitVideTest()
+
+        public void ShouldMissingProductName_Test()
         {
             // Arrange
             var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<Cart>();
-            var productRepository = Mock.Of<ProductRepository>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
             var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productService = (new ProductService(cart, productRepository, orderRepository, localizer), langageService);
-            var product = new ProductViewModel()
-
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
             {
+                //voir avec Hanna
                 Name = string.Empty,
-                Price = string.Empty,
-                Description = string.Empty,
-                Stock = string.Empty,
-                Details = string.Empty,
-
+                // Price = "200",
+                // Stock = "2",
             };
-
-
+            CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
             // Act
 
-            List<string> result = new List<string>();
-
+            var result = productController.Create(product) as ViewResult;
+            var values = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in values)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                    Console.WriteLine(expected);
+                }
+            }
             // Assert
-
-            Assert.Empty(result);
+            Assert.Equal("Please enter a name of product", expected.First());
         }
 
         [Fact]
-
-        public void ShouldCreateFullProductTest()
-
-
+        public void ShouldSaisirUnNomDeProduit_Test()
         {
             // Arrange
-            var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<ICart>();
-            var productRepository = Mock.Of<IProductRepository>();
-            var orderRepository = Mock.Of<IOrderRepository>();
-            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productService = (new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
-            {
-
-                Name = "NomFacile",
-                Price = "100",
-                Stock = "2",
-                Details = "TresFacile",
-
-            };
-
-            //Act
-
-            List<string> result = new List<string>();
-            //Assert
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public void ShouldEmptyNameTest()
-        {
-
-            //Arrange
-
-            var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<ICart>();
-            var productRepository = Mock.Of<IProductRepository>();
-            var orderRepository = Mock.Of<IOrderRepository>();
-            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productService = (new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
-
-            {
-                Name = string.Empty,
-                Price = "100",
-                Stock = "2",
-                Details = " ObjetSimple",
-            };
-
-            CultureInfo.CurrentCulture = new CultureInfo("en-GB");
-            //Act
-            var result = productService as ViewResult;
-            var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new();
-            foreach (var error in modelStateValues)
-            {
-                foreach (var value in error.Errors)
-                {
-                    errors.Add(value.ErrorMessage);
-                }
-
-            }
-
-            //Assert
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Single(errors);
-            Assert.Equal("Please enter a name", errors.First());
-            Assert.True(errors.Count == 1 && errors.First() == "Please enter a name");
-
-        }
-
-        [Fact]
-        public void ShouldcreerProduitNomVideTest()
-        {
-
-            //Arrange
             var languageService = Mock.Of<ILanguageService>();
             var cart = Mock.Of<Cart>();
             var productRepository = Mock.Of<ProductRepository>();
-            var orderRepository = Mock.Of<OrderRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productService = (new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var productController = (new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService));
             var product = new ProductViewModel()
-            {
-
-                Name = string.Empty,
-                Price = "100",
-                Description = "UnObjetSimple",
-                Stock = "2",
-                Details = "TresSimple",
-
-            };
-
-            CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
-
-            //Act
-            ProductViewModel result = new ProductViewModel();
-            var ModelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
-            foreach (var error in ModelStateValues)
-            {
-                //je ne suis pas sure 
-                foreach (var err in error.Errors)
-                {
-
-                    errors.Add(err.ErrorMessage);
-                }
-
-            }
-
-
-            //Assert
-
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Single(errors);
-            Assert.Equal("Veuillez saisir un prix", errors.First());
-
-        }
-
-        [Fact]
-
-
-
-        public void ShouldCreerProduitSansNomTest()
-        {
-            //Arrange
-            var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<Cart>();
-            var orderRepository = Mock.Of<OrderRepository>();
-            var productRepository = Mock.Of<ProductRepository>();
-            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productService = new ProductService(cart, productRepository, orderRepository, localizer);
-            var product = new ProductViewModel()
-
 
             {
                 Name = string.Empty,
-                Price = "100",
-                Description = "Un objet simple",
-                Stock = "2",
-                Details = "Très simple",
-
 
             };
             CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-
             // Act
-            var result = productService.Create(product) as ViewResult;
-            var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
-            foreach (var res in modelStateValues)
+            var result = productController.Create(product) as ViewResult;
+            var values = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in values)
             {
                 foreach (var err in res.Errors)
                 {
-                    errors.Add(err.ErrorMessage);
+                    expected.Add(err.ErrorMessage);
+                    //Console.WriteLine(expected);
                 }
             }
-
-            //Assert
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Single(errors);
-            Assert.Equal("Veuillez saisir un nom", errors.First());
+            // Assert
+            Assert.Equal("Merci de saisir un nom de produit", expected.First());
         }
+
 
         [Fact]
 
-        public void ShouldCreatoNoPrice()
+
+        public void ShouldMissingPrice_Test()
         {
             // Arrange
             var languageService = Mock.Of<ILanguageService>();
@@ -234,76 +106,33 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
             var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
+            var product = new ProductViewModel
             {
-                Name = "NomFacile",
-                Price = string.Empty,
-                Description = "Un objet simple",
-                Stock = "2",
-                Details = "Très simple"
-
+                //  Name = "Nom facile",
+                Price = "",
+                // Stock = "2",
             };
             CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
-
             // Act
             var result = productController.Create(product) as ViewResult;
             var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
+            List<string> expected = new List<string>();
             foreach (var res in modelStateValues)
             {
                 foreach (var err in res.Errors)
                 {
-                    errors.Add(err.ErrorMessage);
+                    expected.Add(err.ErrorMessage);
                 }
-
-
-
+                // int indice = expected.IndexOf("The Price field is required");
             }
-            public void ShouldCreerProduitSansPrixTest()
-        {
-            // Arrange
-            var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<ICart>();
-            var productRepository = Mock.Of<IProductRepository>();
-            var orderRepository = Mock.Of<IOrderRepository>();
-            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
-            {
 
-                Name = "NomFacile",
-                Price = "-5",
-                Description = "UnObjetSimple",
-                Stock = "1",
-                Details = "TresSimple",
-            };
-
-            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-            //Act
-            var result = productController.Create(product) as ViewResult;
-            var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
-            foreach (var result in modelStateValues)
-
-            {
-                foreach (var error in result.Errors)
-                {
-                    errors.Add(error.ErrorMessage);
-
-                }
-
-            }
             //Assert
-
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Equal("Le prix doit être supérieur à zéro", errors[0]);
-            Assert.Contains("Le prix doit être supérieur à zéro", errors);
-
+            Assert.Contains("The Price field is required", expected);
         }
         [Fact]
-        public void CreerNegativePriceTest()
-        {
 
+        public void ShouldIfPriceNotANumber_Test()
+        {
             // Arrange
             var languageService = Mock.Of<ILanguageService>();
             var cart = Mock.Of<ICart>();
@@ -311,127 +140,29 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
             var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
+            var product = new ProductViewModel
             {
-
-                Name = "NomFacile",
-                Price = "-5",
-                Description = "UnObjetSimple",
-                Stock = "1",
-                Details = "TresSimple",
+                //Name = "Nom facile",
+                Price = "p",
+                // Stock = "2",
             };
-
             CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
-            //Act
-            var result = productController.Create(product) as ViewResult;
-            var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
-            foreach (var result in modelStateValues)
-
-            {
-                foreach (var error in result.Errors)
-                {
-                    errors.Add(error.ErrorMessage);
-
-                }
-
-            }
-            //Assert
-
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Equal("The price should be greater than zéro", errors[0]);
-            Assert.Contains("The price should be greater than zero", errors);
-
-
-        }
-            
-
-#pragma warning disable CS8321 // La fonction locale est déclarée mais jamais utilisée
-            public void ShouldCreateNounPriceTest()
-
-            {
-                var cart = Mock.Of<ICart>();
-                var productRepository = Mock.Of<IProductRepository>();
-                var orderRepository = Mock.Of<IOrderRepository>();
-                var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-                var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-                var product = new ProductViewModel()
-                {
-                    Name = "Nom facile",
-                    Price = "",
-                    Description = "Un objet simple",
-                    Stock = "1",
-                    Details = "Très simple",
-
-                };
-                CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
-
-                // Act
-                var result = productController.Create(product) as ViewResult;
-                var modelStateValues = result.ViewData.ModelState.Values;
-                List<string> errors = new List<string>();
-                foreach (var res in modelStateValues)
-                {
-                    foreach (var err in res.Errors)
-                    {
-                        errors.Add(err.ErrorMessage);
-                    }
-                }
-
-                //Assert
-                Assert.False(result.ViewData.ModelState.IsValid);
-                Assert.Equal("The price must be a number", errors[1]);
-                Assert.Contains("The price must be a number", errors);
-            }
-#pragma warning restore CS8321 // La fonction locale est déclarée mais jamais utilisée
-
-
-
-        }
-
-
-        [Fact]
-        public void ShouldCreerPrixProduitTest()
-        {
-            // Arrange
-            var languageService = Mock.Of<ILanguageService>();
-            var cart = Mock.Of<ICart>();
-            var productRepository = Mock.Of<IProductRepository>();
-            var orderRepository = Mock.Of<IOrderRepository>();
-            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
-            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
-            {
-                Name = "Nom facile",
-                Price = "Prix",
-                Description = "Un objet simple",
-                Stock = "1",
-                Details = "Très simple",
-
-            };
-            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-
             // Act
             var result = productController.Create(product) as ViewResult;
             var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
+            List<string> expected = new List<string>();
             foreach (var res in modelStateValues)
             {
                 foreach (var err in res.Errors)
                 {
-                    errors.Add(err.ErrorMessage);
+                    expected.Add(err.ErrorMessage);
                 }
             }
-
             //Assert
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Equal("le prix doit être un nombre", errors[1]);
-            Assert.Contains("le prix doit être un nombre", errors);
+            Assert.Contains("The price must be a number Decima", expected);
         }
-
         [Fact]
-
-        public void ShoulCreateEmptyStockTest()
+        public void ShouldPrixSuperieura_0_Test()
         {
             // Arrange
             var languageService = Mock.Of<ILanguageService>();
@@ -440,39 +171,192 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
             var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
+            var product = new ProductViewModel
             {
-                Name = "Nom facile",
+                // Name = "Nom facile",
+                Price = "0",
+                // Stock = "2",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("Le prix doit être supérieur à zéro", expected);
+        }
+        public void ShouldPriceNotGreaterThan0_Test()
+
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                // Name = "Nom facile",
+                Price = "0",
+                //  Stock = "2",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("The price must be greater than zero", expected);
+
+        }
+        [Fact]
+        public void ShouldSaisirLaQuantite_Test()
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                //Name = "Nom facile",
+                // Price = "200",
+                Stock = "",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("Veuillez saisir une quantité", expected);
+
+        }
+
+        [Fact]
+        public void ShouldIfTheQuantityNotAnInteger_Test()
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                // Name = "Nom facile",
+                // Price = "200",
+                Stock = "S",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("The quantity must be an integer", expected);
+        }
+        [Fact]
+
+        public void ShouldQuantityIsGreaterThanZero_Test()
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                // Name = "Nom facile",
+                //Price = "200",
+                Stock = "-32",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("The quantity must be greater than zero", expected);
+        }
+        [Fact]
+
+        public void ShouldFieldName_Test()
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                Name = string.Empty,
                 Price = "200",
-                Description = "Un objet simple",
-                Stock = string.Empty,
-                Details = "Très simple",
-
-        };
-            CultureInfo.CurrentUICulture = new CultureInfo("en-GB");
-
+                Stock = "2",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
             // Act
             var result = productController.Create(product) as ViewResult;
-            var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
-            foreach (var res in modelStateValues)
+            var values = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in values)
             {
                 foreach (var err in res.Errors)
                 {
-                    errors.Add(err.ErrorMessage);
+                    expected.Add(err.ErrorMessage);
+                    Console.WriteLine(expected);
                 }
             }
-
-            //Assert
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Single(errors);
-            Assert.Equal("Please enter a stock value", errors.First());
-
+            // Assert
+            Assert.Contains("Veuillez saisir un nom", expected);
         }
 
 
-[Fact]
-        public void ShouldCreerStockVideTest()
+        [Fact]
+        public void ShouldSiPrixAbsent_Test()
         {
             // Arrange
             var languageService = Mock.Of<ILanguageService>();
@@ -481,39 +365,68 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var orderRepository = Mock.Of<IOrderRepository>();
             var localizer = Mock.Of<IStringLocalizer<ProductService>>();
             var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
-            var product = new ProductViewModel()
+            var product = new ProductViewModel
             {
-                Name = "Nom facile",
-                Price = "200",
-                Description = "Un objet simple",
-                Stock = string.Empty,
-                Details = "Très simple",
-
+                //Name = "Nom facile",
+                Price = "",
+                // Stock = "2",
             };
             CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-
             // Act
             var result = productController.Create(product) as ViewResult;
             var modelStateValues = result.ViewData.ModelState.Values;
-            List<string> errors = new List<string>();
+            List<string> expected = new List<string>();
             foreach (var res in modelStateValues)
             {
                 foreach (var err in res.Errors)
                 {
-                    errors.Add(err.ErrorMessage);
+                    expected.Add(err.ErrorMessage);
                 }
             }
-
             //Assert
-            Assert.False(result.ViewData.ModelState.IsValid);
-            Assert.Single(errors);
-            Assert.Equal("Veuillez saisir un stock", errors.First());
+            Assert.Contains("Veuillez saisir un prix", expected);
+        }
 
+        [Fact]
+        public void ShouldPrixSuperieurA_0_Test()
+        {
+            // Arrange
+            var languageService = Mock.Of<ILanguageService>();
+            var cart = Mock.Of<ICart>();
+            var productRepository = Mock.Of<IProductRepository>();
+            var orderRepository = Mock.Of<IOrderRepository>();
+            var localizer = Mock.Of<IStringLocalizer<ProductService>>();
+            var productController = new ProductController(new ProductService(cart, productRepository, orderRepository, localizer), languageService);
+            var product = new ProductViewModel
+            {
+                // Name = "Nom facile",
+                Price = "0",
+                //Stock = "2",
+            };
+            CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
+            // Act
+            var result = productController.Create(product) as ViewResult;
+            var modelStateValues = result.ViewData.ModelState.Values;
+            List<string> expected = new List<string>();
+            foreach (var res in modelStateValues)
+            {
+                foreach (var err in res.Errors)
+                {
+                    expected.Add(err.ErrorMessage);
+                }
+            }
+            //Assert
+            Assert.Contains("Le prix doit être supérieur à zéro", expected);
         }
 
 
 
-        public void TestDeGetProduct()
+        // TODO write test methods to ensure a correct coverage of all possibilities
+
+
+        /*
+        [Fact]
+                public void TestDeGetProduct()
 
         {
             var languageService = Mock.Of<ILanguageService>();
@@ -525,14 +438,10 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var id = 12;
             var productExpected = new Product();
             var product = productService.GetProduct(id);
+        }*/
+
+        // TODO write test methods to ensure a correct coverage of all possibilities
 
 
-        }
-
-    
-
-
-
-
-// TODO write test methods to ensure a correct coverage of all possibilities
-
+    }
+}
