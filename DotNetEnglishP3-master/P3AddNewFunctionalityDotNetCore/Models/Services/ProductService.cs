@@ -96,7 +96,7 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
         {
             var validationResults = new List<ValidationResult>();
             var context = new ValidationContext(product, null, null);
-
+            Validator.TryValidateObject(product, context, validationResults, true);
             List<string> modelErrors = new List<string>();
             foreach (var error in validationResults)
             {

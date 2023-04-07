@@ -47,11 +47,10 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             Assert.Null(result);
             // Vérifier que le résultat est nul
-            Assert.Null(result);
-
+           
         }
 
-        //[Fact]
+        [Fact]
         public void DeleteProductFromDbTest()
         {
             // Setup
